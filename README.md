@@ -1,3 +1,39 @@
+
+# ICP Voting System
+
+This project implements a voting system using the Internet Computer Protocol (ICP). It allows users to create, update, delete, and retrieve votes in a decentralized manner using ICP canisters. Each vote consists of a candidate name and voter ID, and the vote count is updated when a vote is modified.
+
+## Features
+
+- Add a new vote with a candidate and voter ID.
+- Retrieve a vote by its unique ID.
+- Update a vote (modify the candidate, voter ID, and increment the vote count).
+- Delete a vote.
+- Store votes securely in a stable memory structure using ICP canisters.
+
+## Technology Stack
+
+- Rust
+- Internet Computer (ICP)
+- Candid (for serialization/deserialization)
+- `ic-stable-structures` (for stable memory management)
+
+## Data Structure
+
+### Vote
+
+A `Vote` has the following structure:
+
+```rust
+struct Vote {
+    id: u64,
+    candidate: String,
+    voter_id: String,
+    count: u64, // Number of votes for this candidate
+    created_at: u64,
+    updated_at: Option<u64>,
+}
+
 # icp_rust_message_board_contract
 
 ### Requirements
