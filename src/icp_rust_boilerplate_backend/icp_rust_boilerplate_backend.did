@@ -1,21 +1,21 @@
 type Error = variant { NotFound : record { msg : text } };
-type Message = record {
+type Expense = record {
   id : nat64;
-  title : text;
   updated_at : opt nat64;
-  body : text;
+  date : nat64;
+  description : text;
   created_at : nat64;
-  attachment_url : text;
+  amount : float64;
 };
-type MessagePayload = record {
-  title : text;
-  body : text;
-  attachment_url : text;
+type ExpensePayload = record {
+  date : nat64;
+  description : text;
+  amount : float64;
 };
-type Result = variant { Ok : Message; Err : Error };
+type Result = variant { Ok : Expense; Err : Error };
 service : {
-  add_message : (MessagePayload) -> (opt Message);
-  delete_message : (nat64) -> (Result);
-  get_message : (nat64) -> (Result) query;
-  update_message : (nat64, MessagePayload) -> (Result);
+  add_expense : (ExpensePayload) -> (opt Expense);
+  delete_expense : (nat64) -> (Result);
+  get_expense : (nat64) -> (Result) query;
+  update_expense : (nat64, ExpensePayload) -> (Result);
 }

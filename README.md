@@ -1,40 +1,30 @@
 
-# ICP Voting System
+# Daily Expenses Tracker
 
-This project implements a voting system using the Internet Computer Protocol (ICP). It allows users to create, update, delete, and retrieve votes in a decentralized manner using ICP canisters. Each vote consists of a candidate name and voter ID, and the vote count is updated when a vote is modified.
+A decentralized application to manage daily expenses using Rust and the Internet Computer Protocol (ICP). This application allows users to track their expenses by adding, updating, viewing, and deleting expense records. The expenses are stored securely in stable memory structures on the Internet Computer.
 
 ## Features
 
-- Add a new vote with a candidate and voter ID.
-- Retrieve a vote by its unique ID.
-- Update a vote (modify the candidate, voter ID, and increment the vote count).
-- Delete a vote.
-- Store votes securely in a stable memory structure using ICP canisters.
-
-## Technology Stack
-
-- Rust
-- Internet Computer (ICP)
-- Candid (for serialization/deserialization)
-- `ic-stable-structures` (for stable memory management)
+- **Add Expense**: Users can create new expense entries by providing a description, amount, and date.
+- **View Expenses**: Retrieve individual expenses by their unique ID.
+- **Update Expense**: Modify the details of an existing expense, including description, amount, and date.
+- **Delete Expense**: Remove an expense from the tracker using its ID.
+- **View Total Spending** (future enhancement): Calculate the total amount spent over a specific period (not implemented in the base version).
 
 ## Data Structure
 
-### Vote
-
-A `Vote` has the following structure:
+Each expense entry is represented by the following fields:
 
 ```rust
-struct Vote {
-    id: u64,
-    candidate: String,
-    voter_id: String,
-    count: u64, // Number of votes for this candidate
-    created_at: u64,
-    updated_at: Option<u64>,
+struct Expense {
+    id: u64,            // Unique identifier for the expense
+    description: String, // Description of the expense
+    amount: f64,         // Amount spent
+    date: u64,           // Timestamp when the expense occurred
+    created_at: u64,     // Timestamp when the expense was created
+    updated_at: Option<u64>, // Timestamp when the expense was last updated (optional)
 }
 
-# icp_rust_message_board_contract
 
 ### Requirements
 * rustc 1.64 or higher
