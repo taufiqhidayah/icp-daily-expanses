@@ -1,4 +1,7 @@
-type Error = variant { NotFound : record { msg : text } };
+type Error = variant {
+  InvalidInput : record { msg : text };
+  NotFound : record { msg : text };
+};
 type Expense = record {
   id : nat64;
   updated_at : opt nat64;
@@ -14,8 +17,13 @@ type ExpensePayload = record {
 };
 type Result = variant { Ok : Expense; Err : Error };
 service : {
-  add_expense : (ExpensePayload) -> (opt Expense);
+  add_expense : (ExpensePayload) -> (Result);
+  calculate_total_expenses : () -> (float64) query;
   delete_expense : (nat64) -> (Result);
   get_expense : (nat64) -> (Result) query;
+  get_expenses_above_amount : (float64) -> (vec Expense) query;
+  get_expenses_by_date_range : (nat64, nat64) -> (vec Expense) query;
+  get_expenses_sorted_by_amount : () -> (vec Expense) query;
+  get_paginated_expenses : (nat64, nat64) -> (vec Expense) query;
   update_expense : (nat64, ExpensePayload) -> (Result);
 }

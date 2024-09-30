@@ -70,7 +70,19 @@ fn get_expense(id: u64) -> Result<Expense, Error> {
 }
 
 #[ic_cdk::update]
-fn add_expense(payload: ExpensePayload) -> Option<Expense> {
+fn add_expense(payload: ExpensePayload) -> Result<Expense, Error> {
+    if payload.amount <= 0.0 {
+        return Err(Error::InvalidInput {
+            msg: "Amount must be greater than zero".to_string(),
+        });
+    }
+
+    if payload.description.is_empty() {
+        return Err(Error::InvalidInput {
+            msg: "Description cannot be empty".to_string(),
+        });
+    }
+
     let id = ID_COUNTER
         .with(|counter| {
             let current_value = *counter.borrow().get();
@@ -87,11 +99,23 @@ fn add_expense(payload: ExpensePayload) -> Option<Expense> {
         updated_at: None,
     };
     do_insert(&new_expense);
-    Some(new_expense)
+    Ok(new_expense)
 }
 
 #[ic_cdk::update]
 fn update_expense(id: u64, payload: ExpensePayload) -> Result<Expense, Error> {
+    if payload.amount <= 0.0 {
+        return Err(Error::InvalidInput {
+            msg: "Amount must be greater than zero".to_string(),
+        });
+    }
+
+    if payload.description.is_empty() {
+        return Err(Error::InvalidInput {
+            msg: "Description cannot be empty".to_string(),
+        });
+    }
+
     match STORAGE.with(|service| service.borrow().get(&id)) {
         Some(mut expense) => {
             expense.description = payload.description;
@@ -122,14 +146,83 @@ fn do_insert(expense: &Expense) {
     STORAGE.with(|service| service.borrow_mut().insert(expense.id, expense.clone()));
 }
 
-#[derive(candid::CandidType, Deserialize, Serialize)]
-enum Error {
-    NotFound { msg: String },
-}
-
 // Helper method to get an expense by id
 fn _get_expense(id: &u64) -> Option<Expense> {
     STORAGE.with(|service| service.borrow().get(id))
+}
+
+// New feature: Get all expenses between two dates
+#[ic_cdk::query]
+fn get_expenses_by_date_range(start_date: u64, end_date: u64) -> Vec<Expense> {
+    STORAGE.with(|storage| {
+        storage
+            .borrow()
+            .iter()
+            .filter(|(_, expense)| expense.date >= start_date && expense.date <= end_date)
+            .map(|(_, expense)| expense.clone())
+            .collect()
+    })
+}
+
+// New feature: Get all expenses above a specific amount
+#[ic_cdk::query]
+fn get_expenses_above_amount(min_amount: f64) -> Vec<Expense> {
+    STORAGE.with(|storage| {
+        storage
+            .borrow()
+            .iter()
+            .filter(|(_, expense)| expense.amount > min_amount)
+            .map(|(_, expense)| expense.clone())
+            .collect()
+    })
+}
+
+// New feature: Calculate the total sum of all expenses
+#[ic_cdk::query]
+fn calculate_total_expenses() -> f64 {
+    STORAGE.with(|storage| {
+        storage
+            .borrow()
+            .iter()
+            .map(|(_, expense)| expense.amount)
+            .sum()
+    })
+}
+
+// New feature: Paginate through expenses (useful for large sets)
+#[ic_cdk::query]
+fn get_paginated_expenses(page: usize, per_page: usize) -> Vec<Expense> {
+    let all_expenses: Vec<Expense> = STORAGE.with(|storage| {
+        storage
+            .borrow()
+            .iter()
+            .map(|(_, expense)| expense.clone())
+            .collect()
+    });
+
+    let start = (page - 1) * per_page;
+    let end = start + per_page;
+    all_expenses.into_iter().skip(start).take(per_page).collect()
+}
+
+// New feature: Get all expenses sorted by amount (descending)
+#[ic_cdk::query]
+fn get_expenses_sorted_by_amount() -> Vec<Expense> {
+    let mut all_expenses: Vec<Expense> = STORAGE.with(|storage| {
+        storage
+            .borrow()
+            .iter()
+            .map(|(_, expense)| expense.clone())
+            .collect()
+    });
+    all_expenses.sort_by(|a, b| b.amount.partial_cmp(&a.amount).unwrap());
+    all_expenses
+}
+
+#[derive(candid::CandidType, Deserialize, Serialize)]
+enum Error {
+    NotFound { msg: String },
+    InvalidInput { msg: String },
 }
 
 // Export candid for the canister
